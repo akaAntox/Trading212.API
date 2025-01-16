@@ -1,17 +1,29 @@
-﻿using Trading212.API.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 
 namespace Trading212.API.Factory;
 
 public static class ApiClientFactory
 {
-    public static ITradingApiClient Create(bool isDemo)
+    public static ITradingApiClient Create(bool isDemo = false)
     {
+        var configuration = new ConfigurationBuilder()
+            .AddUserSecrets<TradingApiClient>()
+            .Build();
+
+        var apiKey = configuration["ApiKey"];
+        if (String.IsNullOrEmpty(apiKey))
+        {
+            throw new Exception("API Key is missing in user secrets");
+        }
+
         var baseUrl = isDemo
             ? "https://demo.trading212.com"
             : "https://live.trading212.com";
 
-        var configuration = new ApiConfiguration { BaseUrl = baseUrl };
         var httpClient = new HttpClient();
-        return new TradingApiClient(httpClient, configuration);
+        httpClient.BaseAddress = new Uri(baseUrl);
+        httpClient.DefaultRequestHeaders.Add("Authorization", apiKey);
+
+        return new TradingApiClient(httpClient);
     }
 }

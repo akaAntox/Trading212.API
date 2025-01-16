@@ -1,4 +1,6 @@
-﻿namespace Trading212.API;
+﻿using Trading212.API.Models.Exchange;
+
+namespace Trading212.API;
 
 public enum TimeValidity
 {
@@ -9,7 +11,11 @@ public enum TimeValidity
 public interface ITradingApiClient
 {
     #region Instruments Metadata
-    public Task<IEnumerable<string>> GetExchangesAsync();
+    /// <summary>
+    /// Fetch all exchanges and their corresponding working schedules that your account has access to
+    /// </summary>
+    /// <returns></returns>
+    public Task<IEnumerable<Exchange>> GetExchangesAsync();/*
     public Task<IEnumerable<string>> GetInstrumentsAsync();
     #endregion
 
@@ -47,6 +53,6 @@ public interface ITradingApiClient
     public Task<IEnumerable<string>> GetHistoricalDividendsAsync(int? cursor, string? ticker, int? limit = 20);
     public Task<IEnumerable<string>> GetHistoricalExportsListAsync();
     public Task<IEnumerable<string>> ExportCsvList(object dataIncluded, DateTime timeFrom, DateTime timeTo);
-    public Task<IEnumerable<string>> GetHistoricalTransactionsAsync(int? cursor, DateTime time, int? limit = 20);
+    public Task<IEnumerable<string>> GetHistoricalTransactionsAsync(int? cursor, DateTime time, int? limit = 20);*/
     #endregion
 }
