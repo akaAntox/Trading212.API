@@ -23,9 +23,9 @@ public interface ITradingApiClient
 
     #region Pies
     public Task<IEnumerable<Pie>> GetPiesAsync();
-    //public Task<IEnumerable<string>> CreatePieAsync(string dividendCashAction, DateTime endDate, int goal, string icon, object instrumentShares, string name);
-    //public Task<IEnumerable<string>> DeletePieAsync(string id);
-    //public Task<IEnumerable<string>> GetPieAsync(string id);
+    public Task<AccountBucket> CreatePieAsync(CreatePieRequest pie);
+    public Task<object> DeletePieAsync(long id);
+    public Task<Pie> GetPieAsync(long id);
     //public Task<IEnumerable<string>> UpdatePieAsync(string id, string dividendCashAction, DateTime endDate, int goal, string icon, object instrumentShares, string name);
     //public Task<IEnumerable<string>> DuplicatePieAsync(string id, string icon, string name);
     //#endregion

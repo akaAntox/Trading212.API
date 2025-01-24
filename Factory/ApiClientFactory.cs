@@ -11,7 +11,7 @@ public static class ApiClientFactory
             .Build();
 
         var apiKey = configuration["ApiKey"];
-        if (String.IsNullOrEmpty(apiKey))
+        if (string.IsNullOrEmpty(apiKey))
         {
             throw new Exception("API Key is missing in user secrets");
         }
