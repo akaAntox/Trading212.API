@@ -19,7 +19,7 @@ public class TradingApiClient : ITradingApiClient
         _httpClient = httpClient;
     }
 
-    private async Task<IEnumerable<T>> GetRequestAsync<T>(string url)
+    private async Task<IEnumerable<T>> GetAllRequestAsync<T>(string url)
     {
         try
         {
@@ -35,29 +35,31 @@ public class TradingApiClient : ITradingApiClient
         }
     }
 
-    private async Task<IEnumerable<T>> GetRequestWithIdAsync<T>(string url)
+    private async Task<T> GetRequestAsync<T>(string url, long id)
     {
         try
         {
+            _httpClient.DefaultRequestHeaders.Add("id", id.ToString());
             var response = await _httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
-            var content = response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<IEnumerable<T>>(content.Result);
+            var content = await response.Content.ReadAsStringAsync();
+            _httpClient.DefaultRequestHeaders.Remove("id");
+            return JsonConvert.DeserializeObject<T>(content);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Cannot get {typeof(T)}s: {ex.Message}");
+            _logger.LogError($"Cannot get {typeof(T)}: {ex.Message}");
             throw;
         }
     }
 
     #region Instruments Metadata
-    public async Task<IEnumerable<Exchange>> GetExchangesAsync() => await GetRequestAsync<Exchange>(ApiEndpoints.ExchangeListUrl);
-    public async Task<IEnumerable<Instrument>> GetInstrumentsAsync() => await GetRequestAsync<Instrument>(ApiEndpoints.InstrumentListUrl);
+    public async Task<IEnumerable<Exchange>> GetExchangesAsync() => await GetAllRequestAsync<Exchange>(ApiEndpoints.ExchangeListUrl);
+    public async Task<IEnumerable<Instrument>> GetInstrumentsAsync() => await GetAllRequestAsync<Instrument>(ApiEndpoints.InstrumentListUrl);
     #endregion
 
     #region Pies
-    public async Task<IEnumerable<Pie>> GetPiesAsync() => await GetRequestAsync<Pie>(ApiEndpoints.PiesUrl);
+    public async Task<IEnumerable<Pie>> GetPiesAsync() => await GetAllRequestAsync<Pie>(ApiEndpoints.PiesUrl);
 
     public async Task<AccountBucket> CreatePieAsync(CreatePieRequest pie)
     { // TODO: check why it's not working (even tho it's working in the API tests with the same payload)
@@ -105,14 +107,6 @@ public class TradingApiClient : ITradingApiClient
         return Task.FromResult<object>(content.Result);
     }
 
-    public Task<Pie> GetPieAsync(long id)
-    {
-        _httpClient.DefaultRequestHeaders.Add("id", id.ToString());
-        var response = _httpClient.GetAsync(ApiEndpoints.PiesUrl);
-        response.Result.EnsureSuccessStatusCode();
-        var content = response.Result.Content.ReadAsStringAsync();
-        _httpClient.DefaultRequestHeaders.Remove("id");
-        return Task.FromResult(JsonConvert.DeserializeObject<Pie>(content.Result));
-    }
+    public async Task<Pie> GetPieAsync(long id) => await GetRequestAsync<Pie>(ApiEndpoints.PiesUrl, id);
     #endregion
 }
