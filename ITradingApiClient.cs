@@ -1,9 +1,13 @@
-﻿using Trading212.API.Models.Exchange;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Trading212.API.Models.Equity_Orders;
+using Trading212.API.Models.Exchange;
 using Trading212.API.Models.Instruments;
 using Trading212.API.Models.Pies;
 
 namespace Trading212.API;
 
+[JsonConverter(typeof(StringEnumConverter))]
 public enum TimeValidity
 {
     DAY,
@@ -28,29 +32,29 @@ public interface ITradingApiClient
     public Task<Pie> GetPieAsync(long id);
     //public Task<IEnumerable<string>> UpdatePieAsync(string id, string dividendCashAction, DateTime endDate, int goal, string icon, object instrumentShares, string name);
     //public Task<IEnumerable<string>> DuplicatePieAsync(string id, string icon, string name);
-    //#endregion
+    #endregion
 
-    //#region Equity Orders
-    //public Task<IEnumerable<string>> GetEquityOrdersAsync();
+    #region Equity Orders
+    public Task<IEnumerable<EquityOrder>> GetEquityOrdersAsync();
     //public Task<IEnumerable<string>> PlaceEquityLimitOrderAsync(decimal limitPrice, int quantity, string ticker, TimeValidity timeValidity);
     //public Task<IEnumerable<string>> PlaceEquityMarketOrderAsync(int quantity, string ticker);
     //public Task<IEnumerable<string>> PlaceEquityStopOrderAsync(int quantity, decimal stopPrice, string ticker, TimeValidity timeValidity);
     //public Task<IEnumerable<string>> PlaceEquityStopLimitOrderAsync(decimal limitPrice, int quantity, decimal stopPrice, string ticker, TimeValidity timeValidity);
-    //public Task<IEnumerable<string>> DeleteEquityOrderAsync(string id);
-    //public Task<IEnumerable<string>> GetEquityOrderAsync(string id);
-    //#endregion
+    public Task<object> DeleteEquityOrderAsync(long id);
+    public Task<EquityOrder> GetEquityOrderAsync(long id);
+    #endregion
 
-    //#region Account Data
+    #region Account Data
     //public Task<IEnumerable<string>> GetAccountCashAsync();
     //public Task<IEnumerable<string>> GetAccountInfoAsync();
-    //#endregion
+    #endregion
 
-    //#region Personal Portfolio
+    #region Personal Portfolio
     //public Task<IEnumerable<string>> GetOpenPositionsAsync();
     //public Task<IEnumerable<string>> GetPositionByTickerAsync(string ticker);
-    //#endregion
+    #endregion
 
-    //#region Historical Items
+    #region Historical Items
     //public Task<IEnumerable<string>> GetHistoricalOrdersAsync(int? cursor, string? ticker, int? limit = 20);
     //public Task<IEnumerable<string>> GetHistoricalDividendsAsync(int? cursor, string? ticker, int? limit = 20);
     //public Task<IEnumerable<string>> GetHistoricalExportsListAsync();

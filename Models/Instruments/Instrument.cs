@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -7,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Trading212.API.Models.Instruments;
 
+[JsonConverter(typeof(StringEnumConverter))]
 public enum InstrumentType
 {
     CRYPTOCURRENCY,

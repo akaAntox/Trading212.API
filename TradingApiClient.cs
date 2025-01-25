@@ -1,36 +1,32 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Text;
 using Trading212.API.Endpoints;
+using Trading212.API.Models.Equity_Orders;
 using Trading212.API.Models.Exchange;
 using Trading212.API.Models.Instruments;
 using Trading212.API.Models.Pies;
 
 namespace Trading212.API;
 
-public class TradingApiClient : ITradingApiClient
+public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
 {
-    private readonly HttpClient _httpClient = new HttpClient();
-    private ILogger<TradingApiClient> _logger;
-
-    public TradingApiClient(HttpClient httpClient)
-    {
-        _httpClient = httpClient;
-    }
+    private ILogger<TradingApiClient> logger;
 
     private async Task<IEnumerable<T>> GetAllRequestAsync<T>(string url)
     {
         try
         {
-            var response = await _httpClient.GetAsync(url);
+            var response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             var content = response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<IEnumerable<T>>(content.Result);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Cannot get {typeof(T)}s: {ex.Message}");
+            logger.LogError($"Cannot get {typeof(T)}s: {ex.Message}");
             throw;
         }
     }
@@ -39,16 +35,30 @@ public class TradingApiClient : ITradingApiClient
     {
         try
         {
-            _httpClient.DefaultRequestHeaders.Add("id", id.ToString());
-            var response = await _httpClient.GetAsync(url);
+            var response = await httpClient.GetAsync($"{url}/{id.ToString()}");
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
-            _httpClient.DefaultRequestHeaders.Remove("id");
             return JsonConvert.DeserializeObject<T>(content);
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Cannot get {typeof(T)}: {ex.Message}");
+            logger.LogError($"Cannot get {typeof(T)}: {ex.Message}");
+            throw;
+        }
+    }
+
+    private async Task<T> DeleteRequestAsync<T>(string url, long id)
+    {
+        try
+        {
+            var response = await httpClient.DeleteAsync($"{url}/{id.ToString()}");
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(content);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Cannot delete {typeof(T)}: {ex.Message}");
             throw;
         }
     }
@@ -62,28 +72,15 @@ public class TradingApiClient : ITradingApiClient
     public async Task<IEnumerable<Pie>> GetPiesAsync() => await GetAllRequestAsync<Pie>(ApiEndpoints.PiesUrl);
 
     public async Task<AccountBucket> CreatePieAsync(CreatePieRequest pie)
-    { // TODO: check why it's not working (even tho it's working in the API tests with the same payload)
+    {
         try
         {
-            var jsonSettings = new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver
-                {
-                    NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false }
-                }
-            };
-
+            var jsonSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false } } };
             var payloadJson = JsonConvert.SerializeObject(pie, jsonSettings);
-            var payload = new StringContent(payloadJson, Encoding.Unicode, "application/json");
-            Console.WriteLine($"Payload: {JsonConvert.SerializeObject(pie, jsonSettings)}");
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(ApiEndpoints.PiesUrl, payload);
-            if (!response.IsSuccessStatusCode)
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"BadRequest: {response.StatusCode}, Details: {errorContent}");
-                throw new HttpRequestException($"Request failed with status {response.StatusCode}");
-            }
+            var response = await httpClient.PostAsync(ApiEndpoints.PiesUrl, payload);
+            response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<AccountBucket>(content);
@@ -95,18 +92,13 @@ public class TradingApiClient : ITradingApiClient
         }
     }
 
-    public Task<object> DeletePieAsync(long id)
-    {
-        _httpClient.DefaultRequestHeaders.Add("id", id.ToString());
-        var response = _httpClient.DeleteAsync(ApiEndpoints.PiesUrl);
-        response.Result.EnsureSuccessStatusCode();
-
-        var content = response.Result.Content.ReadAsStringAsync();
-        _httpClient.DefaultRequestHeaders.Remove("id");
-
-        return Task.FromResult<object>(content.Result);
-    }
-
+    public async Task<object> DeletePieAsync(long id) => await DeleteRequestAsync<object>(ApiEndpoints.PiesUrl, id);
     public async Task<Pie> GetPieAsync(long id) => await GetRequestAsync<Pie>(ApiEndpoints.PiesUrl, id);
+    #endregion
+
+    #region Equity Orders
+    public async Task<IEnumerable<EquityOrder>> GetEquityOrdersAsync() => await GetAllRequestAsync<EquityOrder>(ApiEndpoints.EquityOrdersUrl);
+    public async Task<object> DeleteEquityOrderAsync(long id) => await DeleteRequestAsync<object>(ApiEndpoints.EquityOrderUrl, id);
+    public async Task<EquityOrder> GetEquityOrderAsync(long id) => await GetRequestAsync<EquityOrder>(ApiEndpoints.EquityOrderUrl, id);
     #endregion
 }

@@ -22,8 +22,7 @@ namespace Trading212.API.Models.Pies;
 public class CreatePieRequest
 {
     public DividendCashAction DividendCashAction { get; set; }
-    //public DateTime EndDate { get; set; }
-    public string EndDate { get; set; }
+    public DateTime EndDate { get; set; }
     public long Goal { get; set; }
     public string Icon { get; set; }
     public Dictionary<string, double> InstrumentShares { get; set; }

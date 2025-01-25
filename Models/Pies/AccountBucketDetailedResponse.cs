@@ -21,11 +21,11 @@ public class AccountBucketDetailedResponse
     public DateTime CreationDate { get; set; }
     public DividendCashAction DividendCashAction { get; set; }
     public DateTime EndDate { get; set; }
-    public decimal Goal { get; set; }
+    public decimal? Goal { get; set; }
     public string Icon { get; set; }
     public long Id { get; set; }
-    public decimal InitialInvestment { get; set; }
-    public Dictionary<string, double> InstrumentShares { get; set; }
+    public decimal? InitialInvestment { get; set; }
+    public Dictionary<string, double>? InstrumentShares { get; set; }
     public string Name { get; set; }
-    public string PublicUrl { get; set; }
+    public string? PublicUrl { get; set; }
 }
