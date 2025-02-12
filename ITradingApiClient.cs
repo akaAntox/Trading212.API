@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Trading212.API.Models.Account_Data;
 using Trading212.API.Models.Equity_Orders;
 using Trading212.API.Models.Exchange;
 using Trading212.API.Models.Instruments;
@@ -45,8 +46,8 @@ public interface ITradingApiClient
     #endregion
 
     #region Account Data
-    //public Task<IEnumerable<string>> GetAccountCashAsync();
-    //public Task<IEnumerable<string>> GetAccountInfoAsync();
+    public Task<AccountCash> GetAccountCashAsync();
+    public Task<AccountMetadata> GetAccountInfoAsync();
     #endregion
 
     #region Personal Portfolio

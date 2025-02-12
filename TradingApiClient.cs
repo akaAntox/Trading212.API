@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System.Text;
 using Trading212.API.Endpoints;
+using Trading212.API.Models.Account_Data;
 using Trading212.API.Models.Equity_Orders;
 using Trading212.API.Models.Exchange;
 using Trading212.API.Models.Instruments;
@@ -21,12 +22,28 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         {
             var response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
-            var content = response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<IEnumerable<T>>(content.Result);
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<IEnumerable<T>>(content);
         }
         catch (Exception ex)
         {
             logger.LogError($"Cannot get {typeof(T)}s: {ex.Message}");
+            throw;
+        }
+    }
+
+    private async Task<T> GetSingleRequestAsync<T>(string url)
+    {
+        try
+        {
+            var response = await httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(content);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Cannot get {typeof(T)}: {ex.Message}");
             throw;
         }
     }
@@ -100,5 +117,10 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
     public async Task<IEnumerable<EquityOrder>> GetEquityOrdersAsync() => await GetAllRequestAsync<EquityOrder>(ApiEndpoints.EquityOrdersUrl);
     public async Task<object> DeleteEquityOrderAsync(long id) => await DeleteRequestAsync<object>(ApiEndpoints.EquityOrderUrl, id);
     public async Task<EquityOrder> GetEquityOrderAsync(long id) => await GetRequestAsync<EquityOrder>(ApiEndpoints.EquityOrderUrl, id);
+    #endregion
+
+    #region Account Data
+    public async Task<AccountCash> GetAccountCashAsync() => await GetSingleRequestAsync<AccountCash>(ApiEndpoints.AccountCashUrl);
+    public async Task<AccountMetadata> GetAccountInfoAsync() => await GetSingleRequestAsync<AccountMetadata>(ApiEndpoints.AccountInfoUrl);
     #endregion
 }
