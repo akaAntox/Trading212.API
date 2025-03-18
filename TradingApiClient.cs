@@ -9,6 +9,7 @@ using Trading212.API.Models.Equity_Orders;
 using Trading212.API.Models.Exchange;
 using Trading212.API.Models.Instruments;
 using Trading212.API.Models.Pies;
+using Trading212.API.Personal_Portfolio;
 
 namespace Trading212.API;
 
@@ -48,6 +49,7 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         }
     }
 
+    // TODO: fix empty list response deserialization
     private async Task<T> GetRequestAsync<T>(string url, long id)
     {
         try
@@ -122,5 +124,10 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
     #region Account Data
     public async Task<AccountCash> GetAccountCashAsync() => await GetSingleRequestAsync<AccountCash>(ApiEndpoints.AccountCashUrl);
     public async Task<AccountMetadata> GetAccountInfoAsync() => await GetSingleRequestAsync<AccountMetadata>(ApiEndpoints.AccountInfoUrl);
+    #endregion
+
+    #region Personal Portfolio
+    public async Task<IEnumerable<Position>> GetOpenPositionsAsync() => await GetAllRequestAsync<Position>(ApiEndpoints.OpenPositionsUrl);
+    public async Task<Position> GetOpenPositionAsync(long id) => await GetRequestAsync<Position>(ApiEndpoints.OpenPositionsUrl, id);
     #endregion
 }

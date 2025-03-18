@@ -5,6 +5,7 @@ using Trading212.API.Models.Equity_Orders;
 using Trading212.API.Models.Exchange;
 using Trading212.API.Models.Instruments;
 using Trading212.API.Models.Pies;
+using Trading212.API.Personal_Portfolio;
 
 namespace Trading212.API;
 
@@ -51,8 +52,9 @@ public interface ITradingApiClient
     #endregion
 
     #region Personal Portfolio
-    //public Task<IEnumerable<string>> GetOpenPositionsAsync();
+    public Task<IEnumerable<Position>> GetOpenPositionsAsync();
     //public Task<IEnumerable<string>> GetPositionByTickerAsync(string ticker);
+    public Task<Position> GetOpenPositionAsync(long id);
     #endregion
 
     #region Historical Items
