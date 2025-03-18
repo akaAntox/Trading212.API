@@ -24,7 +24,14 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
             var response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<IEnumerable<T>>(content);
+
+            if (string.IsNullOrWhiteSpace(content) || content == "[]")
+            {
+                return Enumerable.Empty<T>();
+            }
+
+            var result = JsonConvert.DeserializeObject<IEnumerable<T>>(content);
+            return result ?? Enumerable.Empty<T>();
         }
         catch (Exception ex)
         {
@@ -49,7 +56,6 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         }
     }
 
-    // TODO: fix empty list response deserialization
     private async Task<T> GetRequestAsync<T>(string url, long id)
     {
         try
@@ -57,6 +63,16 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
             var response = await httpClient.GetAsync($"{url}/{id.ToString()}");
             response.EnsureSuccessStatusCode();
             var content = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(content) || content == "[]")
+            {
+                if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    return (T)Activator.CreateInstance(typeof(T));
+                }
+                return default;
+            }
+
             return JsonConvert.DeserializeObject<T>(content);
         }
         catch (Exception ex)
