@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Trading212.API.Personal_Portfolio;
 
+[JsonConverter(typeof(StringEnumConverter))]
 public enum Frontend
 {
     API,

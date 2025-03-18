@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.IO.Pipelines;
 using System.Text;
 using Trading212.API.Endpoints;
 using Trading212.API.Models.Account_Data;
 using Trading212.API.Models.Equity_Orders;
 using Trading212.API.Models.Exchange;
+using Trading212.API.Models.Historical_Items;
 using Trading212.API.Models.Instruments;
 using Trading212.API.Models.Pies;
 using Trading212.API.Personal_Portfolio;
@@ -144,6 +147,33 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
 
     #region Personal Portfolio
     public async Task<IEnumerable<Position>> GetOpenPositionsAsync() => await GetAllRequestAsync<Position>(ApiEndpoints.OpenPositionsUrl);
+    public async Task<Position> GetPositionByTickerAsync(string ticker)
+    {
+        try
+        {
+            var jsonSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false } } };
+            var payloadJson = JsonConvert.SerializeObject(new { ticker }, jsonSettings);
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(ApiEndpoints.PositionByTickerUrl, payload);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<Position>(content);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Cannot get position by ticker: {ex.Message}");
+            throw;
+        }
+    }
     public async Task<Position> GetOpenPositionAsync(long id) => await GetRequestAsync<Position>(ApiEndpoints.OpenPositionsUrl, id);
+    #endregion
+
+    #region Historical Items
+    public async Task<HistoryOrderData> GetHistoricalOrdersAsync(int? cursor, string? ticker, int? limit = 20) => await GetSingleRequestAsync<HistoryOrderData>($"{ApiEndpoints.HistoricalOrdersUrl}?cursor={cursor}&ticker={ticker}&limit={limit}");
+    public async Task<HistoryDividendData> GetHistoricalDividendsAsync(int? cursor, string? ticker, int? limit = 20) => await GetSingleRequestAsync<HistoryDividendData>($"{ApiEndpoints.HistoricalDividendsUrl}?cursor={cursor}&ticker={ticker}&limit={limit}");
+    public async Task<IEnumerable<HistoryExportItem>> GetHistoricalExportsListAsync() => await GetAllRequestAsync<HistoryExportItem>(ApiEndpoints.HistoricalExportsUrl);
+    public async Task<HistoryTransactionData> GetHistoricalTransactionsAsync(int? cursor, DateTime? time, int? limit = 20) => await GetSingleRequestAsync<HistoryTransactionData>($"{ApiEndpoints.HistoricalTransactionsUrl}?cursor={cursor}&time={time.Value:yyyy'-'MM'-'dd'T'HH':'mm':'ssZ}&limit={limit}");
     #endregion
 }

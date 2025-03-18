@@ -3,6 +3,7 @@ using Newtonsoft.Json.Converters;
 using Trading212.API.Models.Account_Data;
 using Trading212.API.Models.Equity_Orders;
 using Trading212.API.Models.Exchange;
+using Trading212.API.Models.Historical_Items;
 using Trading212.API.Models.Instruments;
 using Trading212.API.Models.Pies;
 using Trading212.API.Personal_Portfolio;
@@ -53,15 +54,15 @@ public interface ITradingApiClient
 
     #region Personal Portfolio
     public Task<IEnumerable<Position>> GetOpenPositionsAsync();
-    //public Task<IEnumerable<string>> GetPositionByTickerAsync(string ticker);
+    public Task<Position> GetPositionByTickerAsync(string ticker);
     public Task<Position> GetOpenPositionAsync(long id);
     #endregion
 
     #region Historical Items
-    //public Task<IEnumerable<string>> GetHistoricalOrdersAsync(int? cursor, string? ticker, int? limit = 20);
-    //public Task<IEnumerable<string>> GetHistoricalDividendsAsync(int? cursor, string? ticker, int? limit = 20);
-    //public Task<IEnumerable<string>> GetHistoricalExportsListAsync();
+    public Task<HistoryOrderData> GetHistoricalOrdersAsync(int? cursor, string? ticker, int? limit = 20);
+    public Task<HistoryDividendData> GetHistoricalDividendsAsync(int? cursor, string? ticker, int? limit = 20);
+    public Task<IEnumerable<HistoryExportItem>> GetHistoricalExportsListAsync();
     //public Task<IEnumerable<string>> ExportCsvList(object dataIncluded, DateTime timeFrom, DateTime timeTo);
-    //public Task<IEnumerable<string>> GetHistoricalTransactionsAsync(int? cursor, DateTime time, int? limit = 20);
+    public Task<HistoryTransactionData> GetHistoricalTransactionsAsync(int? cursor, DateTime? time, int? limit = 20);
     #endregion
 }
