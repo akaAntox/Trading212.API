@@ -132,6 +132,26 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
 
     public async Task<object> DeletePieAsync(long id) => await DeleteRequestAsync<object>(ApiEndpoints.PiesUrl, id);
     public async Task<Pie> GetPieAsync(long id) => await GetRequestAsync<Pie>(ApiEndpoints.PiesUrl, id);
+    public async Task<AccountBucket> DuplicatePieAsync(string id, string icon, string name)
+    {
+        try
+        {
+            var jsonSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false } } };
+            var payloadJson = JsonConvert.SerializeObject(new { icon, name }, jsonSettings);
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"{ApiEndpoints.PiesUrl}/{id}/duplicate", payload);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<AccountBucket>(content);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Cannot duplicate pie: {ex.Message}");
+            throw;
+        }
+    }
     #endregion
 
     #region Equity Orders
@@ -174,6 +194,29 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
     public async Task<HistoryOrderData> GetHistoricalOrdersAsync(int? cursor, string? ticker, int? limit = 20) => await GetSingleRequestAsync<HistoryOrderData>($"{ApiEndpoints.HistoricalOrdersUrl}?cursor={cursor}&ticker={ticker}&limit={limit}");
     public async Task<HistoryDividendData> GetHistoricalDividendsAsync(int? cursor, string? ticker, int? limit = 20) => await GetSingleRequestAsync<HistoryDividendData>($"{ApiEndpoints.HistoricalDividendsUrl}?cursor={cursor}&ticker={ticker}&limit={limit}");
     public async Task<IEnumerable<HistoryExportItem>> GetHistoricalExportsListAsync() => await GetAllRequestAsync<HistoryExportItem>(ApiEndpoints.HistoricalExportsUrl);
+    public async Task<long> ExportCsvList(ReportDataIncluded dataIncluded, DateTime timeFrom, DateTime timeTo)
+    {
+        try
+        {
+            timeFrom = timeFrom.ToUniversalTime();
+            timeTo = timeTo.ToUniversalTime();
+
+            var jsonSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false } } };
+            var payloadJson = JsonConvert.SerializeObject(new { dataIncluded, timeFrom, timeTo }, jsonSettings);
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(ApiEndpoints.HistoricalExportsUrl, payload);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<long>(content);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Cannot export CSV: {ex.Message}");
+            throw;
+        }
+    }
     public async Task<HistoryTransactionData> GetHistoricalTransactionsAsync(int? cursor, DateTime? time, int? limit = 20) => await GetSingleRequestAsync<HistoryTransactionData>($"{ApiEndpoints.HistoricalTransactionsUrl}?cursor={cursor}&time={time.Value:yyyy'-'MM'-'dd'T'HH':'mm':'ssZ}&limit={limit}");
     #endregion
 }

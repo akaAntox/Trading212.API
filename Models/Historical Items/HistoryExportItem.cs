@@ -22,7 +22,7 @@ public enum ExportStatus
 public class ReportDataIncluded
 {
     public bool IncludeDividends { get; set; }
-    public bool IncludeIntrests { get; set; }
+    public bool includeInterest { get; set; }
     public bool IncludeOrders { get; set; }
     public bool IncludeTransactions { get; set; }
 

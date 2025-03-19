@@ -33,8 +33,8 @@ public interface ITradingApiClient
     public Task<AccountBucket> CreatePieAsync(CreatePieRequest pie);
     public Task<object> DeletePieAsync(long id);
     public Task<Pie> GetPieAsync(long id);
-    //public Task<IEnumerable<string>> UpdatePieAsync(string id, string dividendCashAction, DateTime endDate, int goal, string icon, object instrumentShares, string name);
-    //public Task<IEnumerable<string>> DuplicatePieAsync(string id, string icon, string name);
+    //public Task<AccountBucket> UpdatePieAsync(string id, string dividendCashAction, DateTime endDate, int goal, string icon, object instrumentShares, string name);
+    public Task<AccountBucket> DuplicatePieAsync(string id, string icon, string name);
     #endregion
 
     #region Equity Orders
@@ -62,7 +62,7 @@ public interface ITradingApiClient
     public Task<HistoryOrderData> GetHistoricalOrdersAsync(int? cursor, string? ticker, int? limit = 20);
     public Task<HistoryDividendData> GetHistoricalDividendsAsync(int? cursor, string? ticker, int? limit = 20);
     public Task<IEnumerable<HistoryExportItem>> GetHistoricalExportsListAsync();
-    //public Task<IEnumerable<string>> ExportCsvList(object dataIncluded, DateTime timeFrom, DateTime timeTo);
+    public Task<long> ExportCsvList(ReportDataIncluded dataIncluded, DateTime timeFrom, DateTime timeTo);
     public Task<HistoryTransactionData> GetHistoricalTransactionsAsync(int? cursor, DateTime? time, int? limit = 20);
     #endregion
 }
