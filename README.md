@@ -6,7 +6,12 @@ This project is a .NET wrapper for the Trading212 Public API (v0), designed to s
 
 ## WORK IN PROGRESS: Missing or incomplete features
 
-- Missing UPDATE calls
+- Missing methods:
+   - PlaceEquityLimitOrderAsync
+   - PlaceEquityMarketOrderAsync
+   - PlaceEquityStopOrderAsync
+   - PlaceEquityStopLimitOrderAsync
+   - UpdatePieAsync
 - Object models are currently basic. Need better object models for easier usage and data analysis
 
 ---
@@ -30,7 +35,7 @@ This project is a .NET wrapper for the Trading212 Public API (v0), designed to s
 
 To use this wrapper in your .NET project, add it as a dependency using your preferred method:
 
-#### Using NuGet:
+#### Using NuGet (to publish):
 ```bash
 Install-Package Trading212ApiWrapper
 ```
@@ -38,6 +43,9 @@ Install-Package Trading212ApiWrapper
 #### Manual Reference:
 1. Clone or download this repository.
 2. Add the project to your solution and reference it in your application.
+
+#### Setup secrets:
+- Add your "ApiKey" secret
 
 ---
 
