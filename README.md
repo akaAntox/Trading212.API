@@ -4,11 +4,10 @@ This project is a .NET wrapper for the Trading212 Public API (v0), designed to s
 
 ---
 
-## WORK IN PROGRESS: Missing features
+## WORK IN PROGRESS: Missing or incomplete features
 
-- Add API KEY
-- Client methods implementation
-- Object models for easier usage and data analysis
+- Missing UPDATE calls
+- Object models are currently basic. Need better object models for easier usage and data analysis
 
 ---
 
@@ -25,7 +24,7 @@ This project is a .NET wrapper for the Trading212 Public API (v0), designed to s
 ### Prerequisites
 
 - .NET 6.0 or later
-- Access to Trading212 API (API key
+- Access to Trading212 API (via API key)
 
 ### Installation
 
