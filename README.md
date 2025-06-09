@@ -35,11 +35,6 @@ This project is a .NET wrapper for the Trading212 Public API (v0), designed to s
 
 To use this wrapper in your .NET project, add it as a dependency using your preferred method:
 
-#### Using NuGet (to publish):
-```bash
-Install-Package Trading212ApiWrapper
-```
-
 #### Manual Reference:
 1. Clone or download this repository.
 2. Add the project to your solution and reference it in your application.
