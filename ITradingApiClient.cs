@@ -33,16 +33,16 @@ public interface ITradingApiClient
     public Task<AccountBucket> CreatePieAsync(CreatePieRequest pie);
     public Task<object> DeletePieAsync(long id);
     public Task<Pie> GetPieAsync(long id);
-    //public Task<AccountBucket> UpdatePieAsync(string id, string dividendCashAction, DateTime endDate, int goal, string icon, object instrumentShares, string name);
+    public Task<AccountBucket> UpdatePieAsync(string id, CreatePieRequest pie);
     public Task<AccountBucket> DuplicatePieAsync(string id, string icon, string name);
     #endregion
 
     #region Equity Orders
     public Task<IEnumerable<EquityOrder>> GetEquityOrdersAsync();
-    //public Task<IEnumerable<string>> PlaceEquityLimitOrderAsync(decimal limitPrice, int quantity, string ticker, TimeValidity timeValidity);
-    //public Task<IEnumerable<string>> PlaceEquityMarketOrderAsync(int quantity, string ticker);
-    //public Task<IEnumerable<string>> PlaceEquityStopOrderAsync(int quantity, decimal stopPrice, string ticker, TimeValidity timeValidity);
-    //public Task<IEnumerable<string>> PlaceEquityStopLimitOrderAsync(decimal limitPrice, int quantity, decimal stopPrice, string ticker, TimeValidity timeValidity);
+    public Task<EquityOrder> PlaceEquityLimitOrderAsync(decimal limitPrice, int quantity, string ticker, TimeValidity timeValidity);
+    public Task<EquityOrder> PlaceEquityMarketOrderAsync(int quantity, string ticker);
+    public Task<EquityOrder> PlaceEquityStopOrderAsync(int quantity, decimal stopPrice, string ticker, TimeValidity timeValidity);
+    public Task<EquityOrder> PlaceEquityStopLimitOrderAsync(decimal limitPrice, int quantity, decimal stopPrice, string ticker, TimeValidity timeValidity);
     public Task<object> DeleteEquityOrderAsync(long id);
     public Task<EquityOrder> GetEquityOrderAsync(long id);
     #endregion

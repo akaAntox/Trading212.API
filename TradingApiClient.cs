@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System.IO.Pipelines;
 using System.Text;
 using Trading212.API.Endpoints;
 using Trading212.API.Models.Account_Data;
@@ -18,7 +15,7 @@ namespace Trading212.API;
 
 public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
 {
-    private ILogger<TradingApiClient> logger;
+    private ILogger<TradingApiClient> _logger;
 
     private async Task<IEnumerable<T>> GetAllRequestAsync<T>(string url)
     {
@@ -38,7 +35,7 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         }
         catch (Exception ex)
         {
-            logger.LogError($"Cannot get {typeof(T)}s: {ex.Message}");
+            _logger.LogError($"Cannot get {typeof(T)}s: {ex.Message}");
             throw;
         }
     }
@@ -54,7 +51,7 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         }
         catch (Exception ex)
         {
-            logger.LogError($"Cannot get {typeof(T)}: {ex.Message}");
+            _logger.LogError($"Cannot get {typeof(T)}: {ex.Message}");
             throw;
         }
     }
@@ -80,7 +77,7 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         }
         catch (Exception ex)
         {
-            logger.LogError($"Cannot get {typeof(T)}: {ex.Message}");
+            _logger.LogError($"Cannot get {typeof(T)}: {ex.Message}");
             throw;
         }
     }
@@ -96,7 +93,7 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         }
         catch (Exception ex)
         {
-            logger.LogError($"Cannot delete {typeof(T)}: {ex.Message}");
+            _logger.LogError($"Cannot delete {typeof(T)}: {ex.Message}");
             throw;
         }
     }
@@ -131,7 +128,30 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
     }
 
     public async Task<object> DeletePieAsync(long id) => await DeleteRequestAsync<object>(ApiEndpoints.PiesUrl, id);
+
     public async Task<Pie> GetPieAsync(long id) => await GetRequestAsync<Pie>(ApiEndpoints.PiesUrl, id);
+
+    public async Task<AccountBucket> UpdatePieAsync(string id, CreatePieRequest pie)
+    {
+        try
+        {
+            var jsonSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false } } };
+            var payloadJson = JsonConvert.SerializeObject(pie, jsonSettings);
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync($"{ApiEndpoints.PiesUrl}/{id}", payload);
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<AccountBucket>(content);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Cannot update pie: {ex.Message}");
+            throw;
+        }
+    }
+
     public async Task<AccountBucket> DuplicatePieAsync(string id, string icon, string name)
     {
         try
@@ -148,7 +168,7 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         }
         catch (Exception ex)
         {
-            logger.LogError($"Cannot duplicate pie: {ex.Message}");
+            _logger.LogError($"Cannot duplicate pie: {ex.Message}");
             throw;
         }
     }
@@ -156,7 +176,85 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
 
     #region Equity Orders
     public async Task<IEnumerable<EquityOrder>> GetEquityOrdersAsync() => await GetAllRequestAsync<EquityOrder>(ApiEndpoints.EquityOrdersUrl);
+
+    public async Task<EquityOrder> PlaceEquityLimitOrderAsync(decimal limitPrice, int quantity, string ticker, TimeValidity timeValidity)
+    {
+        try
+        {
+            var jsonSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false } } };
+            var payloadJson = JsonConvert.SerializeObject(new { limitPrice, quantity, ticker, timeValidity }, jsonSettings);
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync(ApiEndpoints.EquityLimitOrderUrl, payload);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<EquityOrder>(content);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Cannot place equity limit order: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task<EquityOrder> PlaceEquityMarketOrderAsync(int quantity, string ticker)
+    {
+        try
+        {
+            var jsonSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false } } };
+            var payloadJson = JsonConvert.SerializeObject(new { quantity, ticker }, jsonSettings);
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync(ApiEndpoints.EquityMarketOrderUrl, payload);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<EquityOrder>(content);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Cannot place equity market order: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task<EquityOrder> PlaceEquityStopOrderAsync(int quantity, decimal stopPrice, string ticker, TimeValidity timeValidity)
+    {
+        try
+        {
+            var jsonSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false } } };
+            var payloadJson = JsonConvert.SerializeObject(new { quantity, stopPrice, ticker, timeValidity }, jsonSettings);
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync(ApiEndpoints.EquityStopOrderUrl, payload);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<EquityOrder>(content);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Cannot place equity stop order: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task<EquityOrder> PlaceEquityStopLimitOrderAsync(decimal limitPrice, int quantity, decimal stopPrice, string ticker, TimeValidity timeValidity)
+    {
+        try
+        {
+            var jsonSettings = new JsonSerializerSettings { ContractResolver = new DefaultContractResolver { NamingStrategy = new CamelCaseNamingStrategy { ProcessDictionaryKeys = false } } };
+            var payloadJson = JsonConvert.SerializeObject(new { limitPrice, quantity, stopPrice, ticker, timeValidity }, jsonSettings);
+            var payload = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+            var response = await httpClient.PostAsync(ApiEndpoints.EquityStopLimitOrderUrl, payload);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<EquityOrder>(content);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Cannot place equity stop limit order: {ex.Message}");
+            throw;
+        }
+    }
+
     public async Task<object> DeleteEquityOrderAsync(long id) => await DeleteRequestAsync<object>(ApiEndpoints.EquityOrderUrl, id);
+
     public async Task<EquityOrder> GetEquityOrderAsync(long id) => await GetRequestAsync<EquityOrder>(ApiEndpoints.EquityOrderUrl, id);
     #endregion
 
@@ -183,7 +281,7 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         }
         catch (Exception ex)
         {
-            logger.LogError($"Cannot get position by ticker: {ex.Message}");
+            _logger.LogError($"Cannot get position by ticker: {ex.Message}");
             throw;
         }
     }
@@ -213,7 +311,7 @@ public class TradingApiClient(HttpClient httpClient) : ITradingApiClient
         }
         catch (Exception ex)
         {
-            logger.LogError($"Cannot export CSV: {ex.Message}");
+            _logger.LogError($"Cannot export CSV: {ex.Message}");
             throw;
         }
     }
