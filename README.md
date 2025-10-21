@@ -4,18 +4,6 @@ This project is a .NET wrapper for the Trading212 Public API (v0), designed to s
 
 ---
 
-## WORK IN PROGRESS: Missing or incomplete features
-
-- Missing methods:
-   - PlaceEquityLimitOrderAsync
-   - PlaceEquityMarketOrderAsync
-   - PlaceEquityStopOrderAsync
-   - PlaceEquityStopLimitOrderAsync
-   - UpdatePieAsync
-- Object models are currently basic. Need better object models for easier usage and data analysis
-
----
-
 ## Features
 
 - Seamless integration with Trading212 Public API (v0).
@@ -95,7 +83,7 @@ foreach (var instrument in instruments)
 
 ## References
 
-- [Trading212 Public API Documentation](https://t212public-api-docs.redoc.ly/)
+- [Trading212 Public API Documentation](https://docs.trading212.com/api)
 
 ---
 
